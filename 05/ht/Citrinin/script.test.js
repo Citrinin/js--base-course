@@ -172,7 +172,6 @@ describe('EventBus - off', function() {
         assert.isOk(a === 9);
         assert.isOk(b === -3);
     })
-
 });
 
 describe('EventBus - once', function() {

@@ -6,15 +6,11 @@
  */
 function compileTemplate(template) {
     return function(element, templateObject) {
-        var pos = -1;
-
         for (key in templateObject) {
             template = template.split('{{' + key + '}}').join(templateObject[key]);
-
         }
         element.innerHTML = template;
     }
-
 }
 
 
@@ -30,17 +26,12 @@ function EventBus() {
  *@param event   событие, обработчики которого необходимо вызвать
  */
 EventBus.prototype.trigger = function(event) {
-
-    for (var i = 0; i < (this.listeners[event] || []).length; i++) {
-        var cb = this.listeners[event][i];
+    (this.listeners[event] || []).forEach(cb => {
         if (typeof(cb) == 'function') {
             var params = [].slice.call(arguments, 1);
             cb.apply(null, params);
-            if (cb.toString().indexOf('self.off') !== -1) {
-                i--;
-            }
         }
-    }
+    });
 }
 
 /**
@@ -55,7 +46,7 @@ EventBus.prototype.on = function(event, cb) {
 }
 
 /**
- *Функция on для удаления обработчиков события
+ *Функция off для удаления обработчиков события
  *@param event   событие, обработчики которого необходимо удалить
  *@param cb      обработчик события event
  */
@@ -64,24 +55,25 @@ EventBus.prototype.off = function(event, cb) {
     if (this.listeners[event] == undefined) {
         return;
     }
-    var position = this.listeners[event].indexOf(cb);
-    this.listeners[event].splice(position, 1);
+    if (!cb) {
+        this.listeners[event].splice(0, this.listeners[event].length);
+        return;
+    }
+    this.listeners[event] = (this.listeners[event] || []).filter((listener) => listener !== cb);
+
 }
 
 /**
- *Функция on для добавления обработчика события, который сработает 1 раз
+ *Функция once для добавления обработчика события, который сработает 1 раз
  *@param event   событие, обработчик которого необходимо добавить
  *@param cb      обработчик события event
  */
 EventBus.prototype.once = function(event, cb) {
     var self = this;
-
-    function functionToOff() {
+    this.on(event, function wrapper() {
         cb.apply(null, arguments);
-        self.off(event, functionToOff);
-    };
-
-    self.on(event, functionToOff);
+        self.off(event, wrapper);
+    });
 }
 
 /**
