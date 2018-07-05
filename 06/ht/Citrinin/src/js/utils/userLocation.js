@@ -1,6 +1,6 @@
 import request from './request';
 
-var userLocation = request('https://api.userinfo.io/userinfos').then(data => data.position)
+var userLocation = request('http://ip-api.com/json').then(data => ({ latitude: data.lat, longitude: data.lon }))
 
 
 export default userLocation;
